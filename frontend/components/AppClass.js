@@ -1,4 +1,6 @@
 import React from 'react'
+import axios from 'axios'
+
 
 // Suggested initial states
 const initialMessage = ''
@@ -14,13 +16,72 @@ const initialState = {
 }
 
 export default class AppClass extends React.Component {
+
+  state = initialState
+
+  canMoveUp = () => {
+    return this.state.index - 3 >= 0 ; 
+  }
+
+  canMoveDown = () => {
+    return this.state.index + 3 <= 8 ; 
+  }
+
+  canMoveLeft = () => {
+    // return this.state.index !== 0 && this.state.index !== 3 && this.state.index !== 6;
+    return this.state.index % 3 !== 0 ;
+  }
+  canMoveRight = () => {
+    return this.state.index % 3 !== 2 ;
+  }
+
+  moveUp = () => {
+    if(!this.canMoveUp()){
+      this.setState({message: `You can't go up`});
+      return;
+    }
+    this.setState({index: this.state.index - 3, message: '', steps: this.state.steps +1})
+  }
+
+  moveDown = () => {
+    if(!this.canMoveDown()){
+      this.setState({message: `You can't go down`});
+      return;
+    }
+    this.setState({index: this.state.index + 3, message: '', steps: this.state.steps +1})
+  }
+
+  moveLeft = () => {
+    if(!this.canMoveLeft()){
+      this.setState({message: "You can't go left" }) ; 
+      return;
+    }
+    this.setState({index: this.state.index -1, message: '', steps: this.state.steps +1})
+  }
+
+  moveRight = () => {
+    if(!this.canMoveRight()){
+      this.setState({message: "You can't go right" }) ; 
+      return;
+    }
+    this.setState({index: this.state.index +1, message: '', steps: this.state.steps +1})
+  }
+
+
   // THE FOLLOWING HELPERS ARE JUST RECOMMENDATIONS.
   // You can delete them and build your own logic from scratch.
+  getY = () => {
+    return Math.floor(this.state.index / 3 ) + 1;
+  }
+  getX = () => {
+    return (this.state.index % 3) + 1;
+  }
 
   getXY = () => {
-    // It it not necessary to have a state to track the coordinates.
-    // It's enough to know what index the "B" is at, to be able to calculate them.
+    return `${ this.getX() }, ${ this.getY() }`
+    
   }
+ 
 
   getXYMessage = () => {
     // It it not necessary to have a state to track the "Coordinates (2, 2)" message for the user.
@@ -29,6 +90,7 @@ export default class AppClass extends React.Component {
   }
 
   reset = () => {
+    this.setState(initialState)
     // Use this helper to reset all states to their initial values.
   }
 
@@ -44,10 +106,22 @@ export default class AppClass extends React.Component {
   }
 
   onChange = (evt) => {
+
+    this.setState( {email: evt.target.value })
+
     // You will need this to update the value of the input.
   }
 
   onSubmit = (evt) => {
+
+    evt.preventDefault();
+    axios.post('http://localhost:9000/api/result', { x: this.getX(), y: this.getY(), steps: this.state.steps, email: this.state.email } )
+    .then(res => {
+      this.setState( { message: res.data.message, email: '' } )
+    }).catch(err => {
+      this.setState( { message: err.response.data.message, email: '' } );
+    })
+    
     // Use a POST request to send a payload to the server.
   }
 

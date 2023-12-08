@@ -7,10 +7,84 @@ const initialSteps = 0
 const initialIndex = 4 // the index the "B" is at
 
 export default function AppFunctional(props) {
+
+  const [ message, setMessage ] = useState( initialMessage );
+  const [ email, setEmail] = useState(initialEmail); 
+  const [steps, setSteps] = useState(initialSteps); 
+  const [index, setIndex] = useState(initialIndex); 
+
   // THE FOLLOWING HELPERS ARE JUST RECOMMENDATIONS.
   // You can delete them and build your own logic from scratch.
 
+
+  const getY = () => {
+    return Math.floor(index / 3 ) + 1;
+  }
+  
+  const getX = () => {
+    return (index % 3) + 1;
+  }
+  
+  function canMoveUp(){
+    return index -3 >= 0 ;
+  }
+  
+  function moveUp(){
+    if(!canMoveUp()){
+      setMessage(`You can't go up`)
+      return
+    }
+    setSteps(steps + 1)
+    setIndex(index -3)
+    setMessage('')
+  }
+  
+  function canMoveDown(){
+    return index +3 <= 8 ; 
+  }
+  
+  function moveDown(){
+    if(!canMoveDown()){
+      setMessage(`You can't go down`)
+      return
+    }
+    setSteps(steps +1)
+    setIndex(index +3)
+    setMessage('')
+  }
+  
+  function canMoveLeft(){
+    return index % 3 !== 0 
+  }
+
+  function moveLeft(){
+    if(!canMoveLeft()){
+      setMessage(`You can't go left`)
+      return
+    }
+    setSteps(steps +1)
+    setIndex(index -1)
+    setMessage('')
+  }
+
+  function canMoveRight(){
+    return index % 3 !==2 ;
+  }
+
+  function moveRight(){
+    if(!canMoveRight()){
+      setMessage(`You can't go right`)
+      return
+    }
+    setSteps(steps +1)
+    setIndex(index +1)
+    setMessage('')
+  }
+
   function getXY() {
+
+    return `${getX()}, ${getY()}`
+
     // It it not necessary to have a state to track the coordinates.
     // It's enough to know what index the "B" is at, to be able to calculate them.
   }
@@ -22,6 +96,12 @@ export default function AppFunctional(props) {
   }
 
   function reset() {
+
+    setEmail(initialEmail)
+    setIndex(initialIndex)
+    setMessage(initialMessage)
+    setSteps(initialSteps)
+
     // Use this helper to reset all states to their initial values.
   }
 
@@ -37,10 +117,24 @@ export default function AppFunctional(props) {
   }
 
   function onChange(evt) {
+    setEmail(evt.target.value)
+
     // You will need this to update the value of the input.
   }
 
   function onSubmit(evt) {
+    evt.preventDefault();
+    axios.post('http://localhost:9000/api/result', {x: getX(), y: getY(), steps: steps, email: email})
+    .then(res => {
+      setMessage(res.data.message)
+      setEmail(initialEmail)
+    }).catch(err => {
+      setMessage(err.response.data.message)
+     
+    })
+
+
+
     // Use a POST request to send a payload to the server.
   }
 
