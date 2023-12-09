@@ -1,4 +1,10 @@
 import React from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import * as yup from "yup"
+// Suggested initial states
+const URL = 'http://localhost:9000/api/result'
+
 
 // Suggested initial states
 const initialMessage = ''

@@ -1,28 +1,39 @@
-import React from "react";
-import AppFunctional from "./AppFunctional";
-import { render, fireEvent, screen } from "@testing-library/react"
+import React from "react"
+import AppFunctional from "./AppFunctional"
+import { render } from "@testing-library/react"
+import {screen, waitfor} from '@testing-library/react'
+import "@testing-library/jest-dom/extend-expect"
+//import userEvent from '@testing-library/user-event'
 
+// Write your tests here
+// test('sanity', () => {
+//   expect(true).toBe(false)
+// })
 test('renders without errors', () => {
+  render(<AppFunctional />)
+});
+
+test('renders coordinates from form', () =>{
   render(<AppFunctional/>)
+  const coordinatesElement = screen.queryByText(/Corrdinates/i);
+  expect(coordinatesElement).toBeInTheDocument();
+  expect(coordinatesElement).toBeTruthy();
+  expect(coordinatesElement).toHaveTextContent(/Corrdinates/i);
+});
+
+test('there should be a button with text of left', ()=>{
+  render(<AppFunctional/>)
+  const leftButton  = screen.queryByText(/left/i);
+  expect(leftButton).toHaveTextContent(/LEFT/i)
 })
-test('coordinates text renders', () => {
+test('there should be a button with text of right', ()=>{
   render(<AppFunctional/>)
-  const coordinates = document.querySelector('#coordinates');
-  expect(coordinates.textContent).toBeTruthy();
+  const rightButton  = screen.queryByText(/right/i);
+  expect(rightButton).toHaveTextContent(/RIGHT/i)
 })
-test('steps text renders', () => {
+
+test('there should be a button with text of up', ()=>{
   render(<AppFunctional/>)
-  const steps = document.querySelector('#steps');
-  expect(steps.textContent).toBeTruthy();
-})
-test('renders 9 squares', () => {
-  render(<AppFunctional/>)
-  const squares = document.querySelectorAll('.square');
-  expect(squares.length).toBe(9)
-})
-test('typing changes input', () => {
-  render(<AppFunctional/>)
-  const input = document.querySelector('#email')
-  fireEvent.change(input, { target: { value: 'lady@gaga.com' } })
-  expect(input.value).toBe('lady@gaga.com')
+  const upButton  = screen.queryByText(/up/i);
+  expect(upButton).toHaveTextContent(/UP/i)
 })
