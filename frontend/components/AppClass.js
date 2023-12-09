@@ -16,58 +16,19 @@ const initialState = {
 }
 
 export default class AppClass extends React.Component {
-
-  state = initialState
-
-  canMoveUp = () => {
-    return this.state.index - 3 >= 0 ; 
-  }
-
-  canMoveDown = () => {
-    return this.state.index + 3 <= 8 ; 
-  }
-
-  canMoveLeft = () => {
-    // return this.state.index !== 0 && this.state.index !== 3 && this.state.index !== 6;
-    return this.state.index % 3 !== 0 ;
-  }
-  canMoveRight = () => {
-    return this.state.index % 3 !== 2 ;
-  }
-
-  moveUp = () => {
-    if(!this.canMoveUp()){
-      this.setState({message: `You can't go up`});
-      return;
+  constructor(){
+    super()
+    this.state = {
+      values: initialState
     }
-    this.setState({index: this.state.index - 3, message: '', steps: this.state.steps +1})
   }
+    getXY = () => {
+      const x = (this.state.values.index % 3) + 1;
+      const y = Math.floor(this.state.values.index / 3) +1;
 
-  moveDown = () => {
-    if(!this.canMoveDown()){
-      this.setState({message: `You can't go down`});
-      return;
+      return { x, y }
+
     }
-    this.setState({index: this.state.index + 3, message: '', steps: this.state.steps +1})
-  }
-
-  moveLeft = () => {
-    if(!this.canMoveLeft()){
-      this.setState({message: "You can't go left" }) ; 
-      return;
-    }
-    this.setState({index: this.state.index -1, message: '', steps: this.state.steps +1})
-  }
-
-  moveRight = () => {
-    if(!this.canMoveRight()){
-      this.setState({message: "You can't go right" }) ; 
-      return;
-    }
-    this.setState({index: this.state.index +1, message: '', steps: this.state.steps +1})
-  }
-
-
   // THE FOLLOWING HELPERS ARE JUST RECOMMENDATIONS.
   // You can delete them and build your own logic from scratch.
   getY = () => {
@@ -90,7 +51,7 @@ export default class AppClass extends React.Component {
   }
 
   reset = () => {
-    this.setState(initialState)
+    this.setState({values: initialState});
     // Use this helper to reset all states to their initial values.
   }
 
@@ -100,26 +61,92 @@ export default class AppClass extends React.Component {
     // this helper should return the current index unchanged.
   }
 
+
+
+  handleMoveError = (direction) => {
+    const currIndex = this.state.values.index;
+    let newIndex = currIndex;
+
+    if (direction === 'left' && currIndex % 3 !== 0) {
+      newIndex = currIndex - 1;
+    } else if (direction === 'left') {
+      this.setState({ values: { ...this.state.values, message: "You can't go left" } });
+    }
+
+    if (direction === 'up' && currIndex >= 3) {
+      newIndex = currIndex - 3;
+
+    } else if (direction === 'up') {
+      this.setState({ values: { ...this.state.values, message: "You can't go up" } });
+    }
+
+    if (direction === 'right' && currIndex % 3 !== 2) {
+      newIndex = currIndex + 1;
+    } else if (direction === 'right') {
+      this.setState({ values: { ...this.state.values, message: "You can't go right" } });
+    }
+
+    if (direction === 'down' && currIndex <= 5) {
+      newIndex = currIndex + 3;
+    } else if (direction === 'down') {
+      this.setState({ values: { ...this.state.values, message: "You can't go down" } });
+    }
+
+
+    return newIndex;
+  }
+
+
+
+
   move = (evt) => {
+
+
+    const direction = evt.target.id;
+
+    this.setState({ values: { ...this.state.values, message: "" } });
+           const newIndex = this.handleMoveError(direction);
+
+           if(newIndex !== this.state.values.index){
+             let newSteps = this.state.values.steps + 1;
+             this.setState({ values: { ...this.state.values, index: newIndex, steps: newSteps } });
+    }
+
+
     // This event handler can use the helper above to obtain a new index for the "B",
     // and change any states accordingly.
   }
 
   onChange = (evt) => {
 
-    this.setState( {email: evt.target.value })
+    const {id, value} = evt.target;
+    this.setState({ values: { ...this.state.values, [id]: value } });
 
     // You will need this to update the value of the input.
   }
 
   onSubmit = (evt) => {
 
-    evt.preventDefault();
-    axios.post('http://localhost:9000/api/result', { x: this.getX(), y: this.getY(), steps: this.state.steps, email: this.state.email } )
-    .then(res => {
-      this.setState( { message: res.data.message, email: '' } )
-    }).catch(err => {
-      this.setState( { message: err.response.data.message, email: '' } );
+    evt.preventDefault()
+    const { x, y } = this.getXY();
+
+    const newValue = {
+      x:x,
+      y:y,
+      steps: this.state.values.steps,
+      email: this.state.values.email,
+    }
+
+    axios.post(URL, newValue)
+    .then(res =>{
+       // this.setState((prevState)=>({ values: {...prevState.values, message: res.data.message, email:''}}))
+       this.setState({ values: {...this.state.values, message: res.data.message, email:''}})
+
+    }).catch(err =>{
+
+      console.error(err.response.data.message)
+      this.setState({values:{...this.state.values, message: err.response.data.message}})
+
     })
     
     // Use a POST request to send a payload to the server.

@@ -83,13 +83,19 @@ export default function AppFunctional(props) {
 
   function getXY() {
 
-    return `${getX()}, ${getY()}`
-
+       const x = (values.index % 3) + 1;
+    const y = Math.floor(values.index / 3) +1;
+   
+    return { x, y };
     // It it not necessary to have a state to track the coordinates.
     // It's enough to know what index the "B" is at, to be able to calculate them.
   }
 
   function getXYMessage() {
+
+    const {x,y} = getXY(values.index);
+    return `Coordinates (${x}, ${y})`
+
     // It it not necessary to have a state to track the "Coordinates (2, 2)" message for the user.
     // You can use the `getXY` helper above to obtain the coordinates, and then `getXYMessage`
     // returns the fully constructed string.
@@ -97,10 +103,7 @@ export default function AppFunctional(props) {
 
   function reset() {
 
-    setEmail(initialEmail)
-    setIndex(initialIndex)
-    setMessage(initialMessage)
-    setSteps(initialSteps)
+    setValues(initialValues)
 
     // Use this helper to reset all states to their initial values.
   }
@@ -112,25 +115,52 @@ export default function AppFunctional(props) {
   }
 
   function move(evt) {
+
+    const direction = evt.target.id;
+
+    setValues({...values, message:''})
+           const newIndex = handleMoveError(direction);
+  
+           if(newIndex !== values.index){
+             let newSteps = values.steps + 1;
+            setValues({...values, index: newIndex, steps: newSteps})
+  
+          }
+
     // This event handler can use the helper above to obtain a new index for the "B",
     // and change any states accordingly.
   }
 
   function onChange(evt) {
-    setEmail(evt.target.value)
+    
+    const {id, value} = evt.target;
+    setValues({...values, [id]: value})
 
     // You will need this to update the value of the input.
   }
 
   function onSubmit(evt) {
-    evt.preventDefault();
-    axios.post('http://localhost:9000/api/result', {x: getX(), y: getY(), steps: steps, email: email})
-    .then(res => {
-      setMessage(res.data.message)
-      setEmail(initialEmail)
-    }).catch(err => {
-      setMessage(err.response.data.message)
-     
+   
+    evt.preventDefault()
+    const { x, y } = getXY();
+
+    const newValue = {
+      x:x,
+      y:y,
+      steps: values.steps,
+      email: values.email
+    }
+
+    axios.post(URL, newValue)
+    .then(res =>{
+        setValues({...values, message: res.data.message, email:''})
+
+
+    }).catch(err =>{
+
+      console.error(err.response.data.message)
+      setValues({...values, message: err.response.data.message})
+
     })
 
 
